@@ -42,6 +42,7 @@ module Fastlane
           end
         else
           UI.error("AppBox not found at path #{appbox_path}. Please install appbox first.")
+          exit
         end
         
       end
