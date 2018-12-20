@@ -10,7 +10,7 @@
 fastlane add_plugin appbox
 ```
 
-**Step 2** - Download the latest version of AppBox from [here](https://github.com/vineetchoudhary/AppBox-iOSAppsWirelessInstallation/releases) or [here](https://getappbox.com/download) and install it into `/Applications` directory of you mac.
+**Step 2** - Download the latest version of AppBox from [here](https://github.com/vineetchoudhary/AppBox-iOSAppsWirelessInstallation/releases) or [here](https://getappbox.com/download) and install it into `/Applications` directory of you mac. Now, open AppBox and login with your Dropbox account.
 
 **Step 3** - Define appbox action in your project Fastfile with emails and message. Here the available params for appbox plugins - 
 
