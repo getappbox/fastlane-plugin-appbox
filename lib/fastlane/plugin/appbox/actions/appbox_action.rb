@@ -25,12 +25,24 @@ module Fastlane
         else
           appbox_path =  "/Applications/AppBox.app/Contents/MacOS/AppBox"
         end
-        UI.message("AppBox Path - #{appbox_path}")
 
-        # Start AppBox
-        UI.message("Starting AppBox...")
-        exit_status = system("exec #{appbox_path} ipa='#{ipa_path}' email='#{emails}' message='#{message}'")
-        UI.message("Back to the Fastlane from AppBox with Success: #{exit_status}")
+        if File.file?(appbox_path)
+          UI.message("AppBox Path - #{appbox_path}")
+
+          # Start AppBox
+          UI.message("Starting AppBox...")
+          exit_status = system("exec #{appbox_path} ipa='#{ipa_path}' email='#{emails}' message='#{message}'")
+
+          if exit_status
+            UI.success('AppBox finished successfully �')
+          else 
+            UI.error('AppBox finished with errors �')
+            UI.message('Please feel free to open an issue on the project GitHub page. Please include a description of what is not working right with your issue. https://github.com/getappbox/fastlane-plugin-appbox/issues/new')
+            exit
+          end
+        else
+          UI.error("AppBox not found at path #{appbox_path}. Please install appbox first.")
+        end
         
       end
 
