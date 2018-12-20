@@ -318,7 +318,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4F7SW76LL6;
-				INFOPLIST_FILE = "AppBox-Fastlane-Deno/Info.plist";
+				INFOPLIST_FILE = "AppBox-Fastlane-Demo/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -336,7 +336,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4F7SW76LL6;
-				INFOPLIST_FILE = "AppBox-Fastlane-Deno/Info.plist";
+				INFOPLIST_FILE = "AppBox-Fastlane-Demo/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
