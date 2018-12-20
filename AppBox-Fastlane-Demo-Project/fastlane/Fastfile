@@ -1,0 +1,9 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Generate IPA file and Create an sharable link using AppBox"
+  lane :gymbox do
+    gym
+    appbox(emails: 'info@developerinsider.in', message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.')
+  end
+end
