@@ -39,6 +39,8 @@ platform :ios do
 end
 ```
 
+![](/AppBox-Fastlane-Demo-Project/AppBoxFastlane.gif)
+
 
 ## 3. About appbox
 [AppBox](https://getappbox.com) is a tool for iOS developers to build and deploy Development, Ad-Hoc and In-house (Enterprise) applications directly to the devices from your Dropbox account. Also, available on [Github](https://github.com/vineetchoudhary/AppBox-iOSAppsWirelessInstallation).
