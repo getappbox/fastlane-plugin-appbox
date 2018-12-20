@@ -34,9 +34,9 @@ module Fastlane
           exit_status = system("exec #{appbox_path} ipa='#{ipa_path}' email='#{emails}' message='#{message}'")
 
           if exit_status
-            UI.success('AppBox finished successfully �')
+            UI.success('AppBox finished successfully')
           else 
-            UI.error('AppBox finished with errors �')
+            UI.error('AppBox finished with errors')
             UI.message('Please feel free to open an issue on the project GitHub page. Please include a description of what is not working right with your issue. https://github.com/getappbox/fastlane-plugin-appbox/issues/new')
             exit
           end
