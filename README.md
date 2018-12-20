@@ -19,7 +19,7 @@ fastlane add_plugin appbox
     >The {PROJECT_NAME} - For Project Name,    
     >{BUILD_VERSION} - For Build Version, and   
     >{BUILD_NUMBER} - For Build Number.
-- `appbox_path` (Optional) - If you've setup AppBox in the different directory then you need to mention that here. Default is '/Applications/AppBox.app'
+- `appbox_path` (Optional) - If you've setup AppBox in the different directory then you need to mention that here. Default is `/Applications/AppBox.app`
 
 
 ## 2. Demo Fastfile with a lane `gymbox`
