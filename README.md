@@ -20,8 +20,8 @@ fastlane add_plugin appbox
     >{BUILD_VERSION} - For Build Version, and   
     >{BUILD_NUMBER} - For Build Number.
 - `appbox_path` (Optional | String) - If you've setup AppBox in the different directory then you need to mention that here. Default is `/Applications/AppBox.app`
-- `keep_same_link` (Optional | Bool) - This feature will keep same short URL for all future build/IPA uploaded with same bundle identifier. If this option is enabled, you can also download the previous build with the same URL. Read more here - https://docs.getappbox.com/Features/keepsamelink/. 
-- `dropbox_folder_name` (Optional | String) - You can change the link by providing a Custom Dropbox Folder Name. By default folder name will be the application bundle identifier. So, AppBox will keep the same link for the IPA file available in the same folder. Read more here - https://docs.getappbox.com/Features/keepsamelink/.
+- `keep_same_link` (Optional | Bool) - This feature will keep same short URL for all future build/IPA uploaded with same bundle identifier. If this option is enabled, you can also download the previous build with the same URL. Read more [here](https://docs.getappbox.com/Features/keepsamelink/). 
+- `dropbox_folder_name` (Optional | String) - You can change the link by providing a Custom Dropbox Folder Name. By default folder name will be the application bundle identifier. So, AppBox will keep the same link for the IPA file available in the same folder. Read more [here](https://docs.getappbox.com/Features/keepsamelink/).
 
 
 ## 2. Demo Fastfile with a lane `gymbox` with Different Options
