@@ -1,19 +1,58 @@
+desc "Upload IPA file and Send an email to single email"
 lane :testSingleEmail do
   gym
-  appbox(emails:'info@developerinsider.in')
+  appbox(
+    emails:'info@developerinsider.in'
+  )
 end
 
+
+desc "Upload IPA file and Send email to multiple commas separated emails"
 lane :testMultipleEmail do
   gym
-  appbox(emails:'info@developerinsider.in,publisher@developerinsider.in')
+  appbox(
+    emails:'info@developerinsider.in,publisher@developerinsider.in'
+  )
 end
 
+
+desc "Upload IPA file and Send email with a custom message."
 lane :testEmailWithCustomMessage do
   gym
-  appbox(emails:'info@developerinsider.in' message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.')
+  appbox(
+    emails:'info@developerinsider.in',
+    message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+  )
 end
 
-lane :testCustomPath do
+
+desc "Upload IPA file where AppBox available at some custom path instead of macOS Application Directory."
+lane :testAppBoxWithCustomPath do
   gym
-  appbox(emails:'info@developerinsider.in', path:'/Users/vineetchoudhary/Desktop/AppBox2.8.0/AppBox.app')
+  appbox(
+    emails:'info@developerinsider.in', 
+    appbox_path:'/Users/vineetchoudhary/Desktop/AppBox2.8.0/AppBox.app',
+  )
+end
+
+
+desc "Upload IPA file and keep the same link for all future upload IPAs."
+lane :testKeepSameLink do
+  gym
+  appbox(
+    emails:'info@developerinsider.in', 
+    message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+    keep_same_link: true,
+  )
+end
+
+desc "Upload IPA file and keep the same link for all future upload IPAs in Custom Dropbox folder."
+lane :testCustomDBFolderName do
+  gym
+  appbox(
+    emails:'info@developerinsider.in', 
+    message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+    keep_same_link: true,
+    dropbox_folder_name: 'Fastlane-Demo-Keep-Same-Link',
+  )
 end
