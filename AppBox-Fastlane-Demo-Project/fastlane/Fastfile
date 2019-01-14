@@ -6,7 +6,8 @@ platform :ios do
     gym
     appbox(
         emails: 'info@developerinsider.in',
-        message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.'
+        message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+        keep_same_link: true
     )
   end
 end
