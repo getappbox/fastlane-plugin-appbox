@@ -20,7 +20,22 @@ or alternatively using `brew cask install fastlane`
 ```
 fastlane ios gymbox
 ```
-Generate IPA file and Create an sharable link using AppBox
+Upload IPA file and Send an email to single email.
+### ios gymbox_message
+```
+fastlane ios gymbox_message
+```
+Upload IPA file and Send email with a custom message.
+### ios gymbox_keep_same_link
+```
+fastlane ios gymbox_keep_same_link
+```
+Upload IPA file and keep the same link for all future upload IPAs.
+### ios gymbox_custom_db_dir_name
+```
+fastlane ios gymbox_custom_db_dir_name
+```
+Upload IPA file and keep the same link for all future upload IPAs in Custom Dropbox folder.
 
 ----
 

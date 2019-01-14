@@ -1,13 +1,41 @@
 default_platform(:ios)
 
 platform :ios do
-  desc "Generate IPA file and Create an sharable link using AppBox"
+  desc "Upload IPA file and Send an email to single email."
   lane :gymbox do
     gym
     appbox(
         emails: 'info@developerinsider.in',
+    )
+  end
+
+  desc "Upload IPA file and Send email with a custom message."
+  lane :gymbox_message do
+    gym
+    appbox(
+        emails: 'info@developerinsider.in',
         message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
-        keep_same_link: true
+    )
+  end
+
+  desc "Upload IPA file and keep the same link for all future upload IPAs."
+  lane :gymbox_keep_same_link do
+    gym
+    appbox(
+        emails: 'info@developerinsider.in',
+        message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+        keep_same_link: true,
+    )
+  end
+
+  desc "Upload IPA file and keep the same link for all future upload IPAs in Custom Dropbox folder."
+  lane :gymbox_custom_db_dir_name do
+    gym
+    appbox(
+        emails: 'info@developerinsider.in',
+        message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+        keep_same_link: true,
+        dropbox_folder_name: 'Fastlane-Demo-Keep-Same-Link',
     )
   end
 end
