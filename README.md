@@ -14,30 +14,115 @@ fastlane add_plugin appbox
 
 **Step 3** - Define appbox action in your project Fastfile with emails and message. Here the available params for appbox plugins - 
 
-- `emails` (Required) - Comma-separated list of email address that should receive application installation link.
-- `message` (Optional) - Attach personal message in the email. Supported Keywords:  
+- `emails` (Required | String) - Comma-separated list of email address that should receive application installation link.
+- `message` (Optional | String) - Attach personal message in the email. Supported Keywords:  
     >The {PROJECT_NAME} - For Project Name,    
     >{BUILD_VERSION} - For Build Version, and   
     >{BUILD_NUMBER} - For Build Number.
-- `appbox_path` (Optional) - If you've setup AppBox in the different directory then you need to mention that here. Default is `/Applications/AppBox.app`
+- `appbox_path` (Optional | String) - If you've setup AppBox in the different directory then you need to mention that here. Default is `/Applications/AppBox.app`
+- `keep_same_link` (Optional | Bool) - This feature will keep same short URL for all future build/IPA uploaded with same bundle identifier. If this option is enabled, you can also download the previous build with the same URL. Read more here - https://docs.getappbox.com/Features/keepsamelink/. 
+- `dropbox_folder_name` (Optional | String) - You can change the link by providing a Custom Dropbox Folder Name. By default folder name will be the application bundle identifier. So, AppBox will keep the same link for the IPA file available in the same folder. Read more here - https://docs.getappbox.com/Features/keepsamelink/.
 
 
-## 2. Demo Fastfile with a lane `gymbox`
+## 2. Demo Fastfile with a lane `gymbox` with Different Options
+
+#### 1. Upload IPA file and Send an email to single email.
 
 ```rb
 default_platform(:ios)
 
 platform :ios do
-  desc "Generate IPA file and Create an sharable link using AppBox"
   lane :gymbox do
     gym
     appbox(
-        emails: 'youemail@example.com',
-        message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.'
+        emails: 'you@example.com',
     )
   end
 end
 ```
+
+#### 2. Upload IPA file and Send email to multiple commas separated emails.
+
+```rb
+default_platform(:ios)
+
+platform :ios do
+  lane :gymbox do
+    gym
+    appbox(
+        emails: 'you@example.com,'someoneelse@example.com',
+    )
+  end
+end
+```
+
+#### 3. Upload IPA file and Send email with a custom message.
+
+```rb
+default_platform(:ios)
+
+platform :ios do
+  lane :gymbox do
+    gym
+    appbox(
+        emails: 'you@example.com',
+        message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+    )
+  end
+end
+```
+
+#### 4. Upload IPA file and keep the same link for all future upload IPAs.
+
+```rb
+default_platform(:ios)
+
+platform :ios do
+  lane :gymbox do
+    gym
+    appbox(
+        emails: 'you@example.com',
+        message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+        keep_same_link: true,
+    )
+  end
+end
+```
+
+#### 5. Upload IPA file and keep the same link for all future upload IPAs in Custom Dropbox folder.
+
+```rb
+default_platform(:ios)
+
+platform :ios do
+  lane :gymbox do
+    gym
+    appbox(
+        emails: 'you@example.com',
+        message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+        keep_same_link: true,
+        dropbox_folder_name: 'Fastlane-Demo-Keep-Same-Link',
+    )
+  end
+end
+```
+
+#### 6. Upload IPA file where AppBox available at some custom path instead of macOS Application Directory.
+
+```rb
+default_platform(:ios)
+
+platform :ios do
+  lane :gymbox do
+    gym
+    appbox(
+        emails: 'you@example.com,'someoneelse@example.com',
+        appbox_path:'/Users/vineetchoudhary/Desktop/AppBox2.8.0/AppBox.app',
+    )
+  end
+end
+```
+
 
 ![](/AppBox-Fastlane-Demo-Project/AppBoxFastlane.gif)
 
