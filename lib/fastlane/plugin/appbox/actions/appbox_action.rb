@@ -3,6 +3,13 @@ require_relative '../helper/appbox_helper'
 
 module Fastlane
   module Actions
+    module SharedValues
+      APPBOX_IPA_URL = :APPBOX_MANIFEST_URL
+      APPBOX_SHARE_URL = :APPBOX_SHARE_URL
+      APPBOX_MANIFEST_URL = :APPBOX_MANIFEST_URL
+      APPBOX_LONG_SHARE_URL = :APPBOX_LONG_SHARE_URL
+    end
+
     class AppboxAction < Action
       def self.run(params)
         UI.message(params)
@@ -55,6 +62,10 @@ module Fastlane
 
           # Print upload status
           if exit_status
+            Actions.lane_context[SharedValues::APPBOX_IPA_URL] = `exec $APPBOX_IPA_URL`
+            Actions.lane_context[SharedValues::APPBOX_SHARE_URL] = `exec $APPBOX_SHARE_URL`
+            Actions.lane_context[SharedValues::APPBOX_MANIFEST_URL] = `exec $APPBOX_MANIFEST_URL`
+            Actions.lane_context[SharedValues::APPBOX_LONG_SHARE_URL] = `exec $APPBOX_LONG_SHARE_URL`
             UI.success('AppBox finished successfully')
           else 
             UI.error('AppBox finished with errors')
@@ -66,6 +77,15 @@ module Fastlane
           exit
         end
         
+      end
+
+      def self.output
+        [
+          ['APPBOX_IPA_URL', 'Upload IPA file URL to download IPA file.'],
+          ['APPBOX_MANIFEST_URL', 'Manifest file URL for upload application.'],
+          ['APPBOX_SHARE_URL', 'AppBox short shareable URL to install uploaded application.'],
+          ['APPBOX_LONG_SHARE_URL', 'AppBox long shareable URL to install uploaded application.']
+        ]
       end
 
       def self.description
