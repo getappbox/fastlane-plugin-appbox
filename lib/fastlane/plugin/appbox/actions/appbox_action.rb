@@ -66,6 +66,11 @@ module Fastlane
             Actions.lane_context[SharedValues::APPBOX_SHARE_URL] = `exec $APPBOX_SHARE_URL`
             Actions.lane_context[SharedValues::APPBOX_MANIFEST_URL] = `exec $APPBOX_MANIFEST_URL`
             Actions.lane_context[SharedValues::APPBOX_LONG_SHARE_URL] = `exec $APPBOX_LONG_SHARE_URL`
+            sh("echo $APPBOX_SHARE_URL")
+            UI.success("IPA URL - #{Actions.lane_context[SharedValues::APPBOX_IPA_URL]}")
+            UI.success("Share URL - #{Actions.lane_context[SharedValues::APPBOX_SHARE_URL]}")
+            UI.success("Manifest URL - #{Actions.lane_context[SharedValues::APPBOX_MANIFEST_URL]}")
+            UI.success("Long Share URL - #{Actions.lane_context[SharedValues::APPBOX_LONG_SHARE_URL]}")
             UI.success('AppBox finished successfully')
           else 
             UI.error('AppBox finished with errors')
