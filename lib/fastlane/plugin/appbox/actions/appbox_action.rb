@@ -1,3 +1,4 @@
+require "json"
 require 'fastlane/action'
 require_relative '../helper/appbox_helper'
 
@@ -62,15 +63,21 @@ module Fastlane
 
           # Print upload status
           if exit_status
-            Actions.lane_context[SharedValues::APPBOX_IPA_URL] = `exec $APPBOX_IPA_URL`
-            Actions.lane_context[SharedValues::APPBOX_SHARE_URL] = `exec $APPBOX_SHARE_URL`
-            Actions.lane_context[SharedValues::APPBOX_MANIFEST_URL] = `exec $APPBOX_MANIFEST_URL`
-            Actions.lane_context[SharedValues::APPBOX_LONG_SHARE_URL] = `exec $APPBOX_LONG_SHARE_URL`
-            sh("echo $APPBOX_SHARE_URL")
-            UI.success("IPA URL - #{Actions.lane_context[SharedValues::APPBOX_IPA_URL]}")
-            UI.success("Share URL - #{Actions.lane_context[SharedValues::APPBOX_SHARE_URL]}")
-            UI.success("Manifest URL - #{Actions.lane_context[SharedValues::APPBOX_MANIFEST_URL]}")
-            UI.success("Long Share URL - #{Actions.lane_context[SharedValues::APPBOX_LONG_SHARE_URL]}")
+
+            # Check if share url file exist and print value
+            share_url_file_path = "#{Dir.home}/.appbox_share_value.json"
+            if File.file?(share_url_file_path)
+              file = File.read(share_url_file_path)
+              share_urls_values = JSON.parse(file)
+
+              Actions.lane_context[SharedValues::APPBOX_IPA_URL] = share_urls_values['APPBOX_IPA_URL']
+              Actions.lane_context[SharedValues::APPBOX_SHARE_URL] = share_urls_values['APPBOX_SHARE_URL']
+              Actions.lane_context[SharedValues::APPBOX_MANIFEST_URL] = share_urls_values['APPBOX_MANIFEST_URL']
+              Actions.lane_context[SharedValues::APPBOX_LONG_SHARE_URL] = share_urls_values['APPBOX_LONG_SHARE_URL']
+
+              FastlaneCore::PrintTable.print_values(config: share_urls_values, hide_keys: [], title: "Summary for AppBox")
+            end
+
             UI.success('AppBox finished successfully')
           else 
             UI.error('AppBox finished with errors')
