@@ -123,18 +123,23 @@ platform :ios do
 end
 ```
 
+## 3. Supported AppBox link access via Fastlane SharedValues
+- `APPBOX_SHARE_URL` - AppBox short shareable URL to install uploaded application.   
+- `APPBOX_IPA_URL`- Upload IPA file URL to download IPA file.   
+- `APPBOX_MANIFEST_URL` - Manifest file URL for upload application.   
+- `APPBOX_LONG_SHARE_UR` - AppBox long shareable URL to install uploaded application.   
 
 ![](/AppBox-Fastlane-Demo-Project/AppBoxFastlane.gif)
 
 
-## 3. About AppBox
+## 4. About AppBox
 [AppBox](https://getappbox.com) is a tool for iOS developers to build and deploy Development, Ad-Hoc and In-house (Enterprise) applications directly to the devices from your Dropbox account. Also, available on [Github](https://github.com/vineetchoudhary/AppBox-iOSAppsWirelessInstallation).
 
-## 4. Example
+## 5. Example
 
 Check out the [example `Fastfile`](fastlane/Fastfile) to see how to use this plugin. Try it by cloning the repo, running `fastlane install_plugins` and `bundle exec fastlane test`.
 
-## 5. Issues and Feedback
+## 6. Issues and Feedback
 For any other issues and feedback about this plugin, please submit it to this [repository](https://github.com/getappbox/fastlane-plugin-appbox/issues/new).
 
 ## 6. Troubleshooting
