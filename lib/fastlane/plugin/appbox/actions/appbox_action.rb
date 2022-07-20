@@ -5,7 +5,7 @@ require_relative '../helper/appbox_helper'
 module Fastlane
   module Actions
     module SharedValues
-      APPBOX_IPA_URL = :APPBOX_MANIFEST_URL
+      APPBOX_IPA_URL = :APPBOX_IPA_URL
       APPBOX_SHARE_URL = :APPBOX_SHARE_URL
       APPBOX_MANIFEST_URL = :APPBOX_MANIFEST_URL
       APPBOX_LONG_SHARE_URL = :APPBOX_LONG_SHARE_URL
