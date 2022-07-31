@@ -10,3 +10,7 @@ fastlane/README.md
 fastlane/report.xml
 coverage
 test-results
+AppBox-Fastlane-Demo-Project/AppBox-Fastlane-Demo.app.dSYM.zip
+AppBox-Fastlane-Demo-Project/AppBox-Fastlane-Demo.ipa
+AppBox-Fastlane-Demo-Project/fastlane/report.xml
+*.xcuserstate
