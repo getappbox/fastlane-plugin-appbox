@@ -13,11 +13,6 @@ module Fastlane
 
     class AppboxAction < Action
       def self.run(params)
-        UI.message(params)
-
-        ipa_path = Actions.lane_context[ Actions::SharedValues::IPA_OUTPUT_PATH ]
-        UI.message("IPA PATH - #{ipa_path}")
-
         #emails param
         if params[:emails]
           emails = params[:emails]
@@ -51,21 +46,35 @@ module Fastlane
 
         #Check if AppBox exist at given path 
         if File.file?(appbox_path)
+          UI.message("")
           UI.message("AppBox Path - #{appbox_path}")
 
+          ipa_path = Actions.lane_context[ Actions::SharedValues::IPA_OUTPUT_PATH ]
+          ipa_file_name = File.basename(ipa_path)
+          UI.message("IPA PATH - #{ipa_path}")
+
+          # Copy ipa file into AppBox temporary directory
+          appbox_data_dir = File.expand_path("~/Library/Containers/com.developerinsider.AppBox/Data")
+          appbox_temp_path = File.join(appbox_data_dir, "tmp")
+          UI.message("Copying IPA file to AppBox temporary directory - #{appbox_temp_path}")
+          FileUtils.cp ipa_path, appbox_temp_path
+          temp_ipa_path = File.join(appbox_temp_path, ipa_file_name)
+
           # Start AppBox
+          UI.message("")
           UI.message("Starting AppBox...")
+          UI.message("Upload process will start soon. Upload process might take a few minutes. Please don't interrupt the script.")
           if dropbox_folder_name
-            exit_status = system("exec #{appbox_path} ipa='#{ipa_path}' email='#{emails}' message='#{message}' keepsamelink=#{keep_same_link} dbfolder='#{dropbox_folder_name}'")
+            exit_status = system("exec #{appbox_path} ipa='#{temp_ipa_path}' email='#{emails}' message='#{message}' keepsamelink=#{keep_same_link} dbfolder='#{dropbox_folder_name}'")
           else
-            exit_status = system("exec #{appbox_path} ipa='#{ipa_path}' email='#{emails}' message='#{message}' keepsamelink='#{keep_same_link}'")
+            exit_status = system("exec #{appbox_path} ipa='#{temp_ipa_path}' email='#{emails}' message='#{message}' keepsamelink='#{keep_same_link}'")
           end
 
           # Print upload status
           if exit_status
-
+            UI.success("Successfully uploaded the IPA file to DropBox. Check below summary for more details.")
             # Check if share url file exist and print value
-            share_url_file_path = "#{Dir.home}/.appbox_share_value.json"
+            share_url_file_path = File.join(appbox_data_dir, "Documents", ".appbox_share_value.json")
             if File.file?(share_url_file_path)
               file = File.read(share_url_file_path)
               share_urls_values = JSON.parse(file)
@@ -73,7 +82,6 @@ module Fastlane
               Actions.lane_context[SharedValues::APPBOX_IPA_URL] = share_urls_values['APPBOX_IPA_URL']
               Actions.lane_context[SharedValues::APPBOX_SHARE_URL] = share_urls_values['APPBOX_SHARE_URL']
               Actions.lane_context[SharedValues::APPBOX_MANIFEST_URL] = share_urls_values['APPBOX_MANIFEST_URL']
-              Actions.lane_context[SharedValues::APPBOX_LONG_SHARE_URL] = share_urls_values['APPBOX_LONG_SHARE_URL']
 
               FastlaneCore::PrintTable.print_values(config: share_urls_values, hide_keys: [], title: "Summary for AppBox")
             end
