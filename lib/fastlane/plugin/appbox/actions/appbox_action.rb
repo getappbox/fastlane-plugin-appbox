@@ -85,9 +85,10 @@ module Fastlane
 
               FastlaneCore::PrintTable.print_values(config: share_urls_values, hide_keys: [], title: "Summary for AppBox")
             end
-
+            clean_temporary_files(appbox_temp_path)
             UI.success('AppBox finished successfully')
           else 
+            clean_temporary_files(appbox_temp_path)
             UI.error('AppBox finished with errors')
             UI.message('Please feel free to open an issue on the project GitHub page. Please include a description of what is not working right with your issue. https://github.com/getappbox/fastlane-plugin-appbox/issues/new')
             exit
@@ -97,6 +98,22 @@ module Fastlane
           exit
         end
         
+      end
+
+      # Delete all files/folders in AppBox temporary directory
+      def self.clean_temporary_files(appbox_temp_path)
+        UI.message("Cleaning AppBox temporary directory - #{appbox_temp_path}")
+        if File.directory?(appbox_temp_path)
+          Dir.foreach(appbox_temp_path) do |file|
+            next if file == '.' or file == '..'
+            file_path = File.join(appbox_temp_path, file)
+            if File.file?(file_path)
+              File.delete(file_path)
+            else
+              FileUtils.rm_rf(file_path)
+            end
+          end
+        end
       end
 
       def self.output
