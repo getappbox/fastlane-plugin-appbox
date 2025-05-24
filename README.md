@@ -117,20 +117,20 @@ platform :ios do
     gym
     appbox(
         emails: 'you@example.com,'someoneelse@example.com',
-        appbox_path:'/Users/vineetchoudhary/Desktop/AppBox2.8.0/AppBox.app',
+        appbox_path:'/Users/vineetchoudhary/Desktop/AppBox3.4.0/AppBox.app',
     )
   end
 end
 ```
 
+#### Note
+When you run this for the first time, a pop-up will appear stating that "Terminal.app" wants to access data from other apps. You must allow this to copy the IPA file to the Appbox temporary directory, enabling Appbox to access and upload it.
+![](/AppBox-Fastlane-Demo-Project/images/terminal-permission.webp)
+
 ## 3. Supported AppBox link access via Fastlane SharedValues
 - `APPBOX_SHARE_URL` - AppBox short shareable URL to install uploaded application.   
 - `APPBOX_IPA_URL`- Upload IPA file URL to download IPA file.   
 - `APPBOX_MANIFEST_URL` - Manifest file URL for upload application.   
-- `APPBOX_LONG_SHARE_UR` - AppBox long shareable URL to install uploaded application.   
-
-![](/AppBox-Fastlane-Demo-Project/AppBoxFastlane.gif)
-
 
 ## 4. About AppBox
 [AppBox](https://getappbox.com) is a tool for iOS developers to build and deploy Development, Ad-Hoc and In-house (Enterprise) applications directly to the devices from your Dropbox account. Also, available on [Github](https://github.com/vineetchoudhary/AppBox-iOSAppsWirelessInstallation).
