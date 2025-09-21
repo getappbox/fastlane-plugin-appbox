@@ -15,3 +15,4 @@ AppBox-Fastlane-Demo-Project/AppBox-Fastlane-Demo.ipa
 AppBox-Fastlane-Demo-Project/fastlane/report.xml
 *.xcuserstate
 .DS_Store
+*.profraw
