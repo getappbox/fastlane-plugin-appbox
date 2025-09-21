@@ -8,28 +8,10 @@ module Fastlane
       APPBOX_IPA_URL = :APPBOX_IPA_URL
       APPBOX_SHARE_URL = :APPBOX_SHARE_URL
       APPBOX_MANIFEST_URL = :APPBOX_MANIFEST_URL
-      APPBOX_LONG_SHARE_URL = :APPBOX_LONG_SHARE_URL
     end
 
     class AppboxAction < Action
       def self.run(params)
-        #emails param
-        if params[:emails]
-          emails = params[:emails]
-          UI.message("Emails - #{emails}")
-        end
-
-        #developer personal message param
-        if params[:message]
-          message = params[:message]
-          UI.message("Message - #{message}")
-        end
-
-        #keep same linkparam
-        if params[:keep_same_link]
-          keep_same_link = params[:keep_same_link]
-          UI.message("Keep Same Link - #{keep_same_link}")
-        end
 
         #custom dropbox folder name
         if params[:dropbox_folder_name]
@@ -37,82 +19,90 @@ module Fastlane
           UI.message("Dropbox folder name - #{dropbox_folder_name}")
         end
 
-        #AppBox Path
-        if params[:appbox_path]
-          appbox_path = "#{params[:appbox_path]}/Contents/MacOS/AppBox"
-        else
-          appbox_path =  "/Applications/AppBox.app/Contents/MacOS/AppBox"
-        end
-
-        #Check if AppBox exist at given path 
-        if File.file?(appbox_path)
-          UI.message("")
-          UI.message("AppBox Path - #{appbox_path}")
-
-          ipa_path = Actions.lane_context[ Actions::SharedValues::IPA_OUTPUT_PATH ]
-          ipa_file_name = File.basename(ipa_path)
-          UI.message("IPA PATH - #{ipa_path}")
-
-          # Copy ipa file into AppBox temporary directory
-          appbox_data_dir = File.expand_path("~/Library/Containers/com.developerinsider.AppBox/Data")
-          appbox_temp_path = File.join(appbox_data_dir, "tmp")
-          UI.message("Copying IPA file to AppBox temporary directory - #{appbox_temp_path}")
-          FileUtils.cp ipa_path, appbox_temp_path
-          temp_ipa_path = File.join(appbox_temp_path, ipa_file_name)
-
-          # Start AppBox
-          UI.message("")
-          UI.message("Starting AppBox...")
-          UI.message("Upload process will start soon. Upload process might take a few minutes. Please don't interrupt the script.")
-          if dropbox_folder_name
-            exit_status = system("exec #{appbox_path} ipa='#{temp_ipa_path}' email='#{emails}' message='#{message}' keepsamelink=#{keep_same_link} dbfolder='#{dropbox_folder_name}'")
-          else
-            exit_status = system("exec #{appbox_path} ipa='#{temp_ipa_path}' email='#{emails}' message='#{message}' keepsamelink='#{keep_same_link}'")
-          end
-
-          # Print upload status
-          if exit_status
-            UI.success("Successfully uploaded the IPA file to DropBox. Check below summary for more details.")
-            # Check if share url file exist and print value
-            share_url_file_path = File.join(appbox_data_dir, "Documents", ".appbox_share_value.json")
-            if File.file?(share_url_file_path)
-              file = File.read(share_url_file_path)
-              share_urls_values = JSON.parse(file)
-
-              Actions.lane_context[SharedValues::APPBOX_IPA_URL] = share_urls_values['APPBOX_IPA_URL']
-              Actions.lane_context[SharedValues::APPBOX_SHARE_URL] = share_urls_values['APPBOX_SHARE_URL']
-              Actions.lane_context[SharedValues::APPBOX_MANIFEST_URL] = share_urls_values['APPBOX_MANIFEST_URL']
-
-              FastlaneCore::PrintTable.print_values(config: share_urls_values, hide_keys: [], title: "Summary for AppBox")
-            end
-            clean_temporary_files(appbox_temp_path)
-            UI.success('AppBox finished successfully')
-          else 
-            clean_temporary_files(appbox_temp_path)
-            UI.error('AppBox finished with errors')
-            UI.message('Please feel free to open an issue on the project GitHub page. Please include a description of what is not working right with your issue. https://github.com/getappbox/fastlane-plugin-appbox/issues/new')
-            exit
-          end
-        else
-          UI.error("AppBox not found at path #{appbox_path}. Please download (https://getappbox.com/download) and install appbox first. ")
+        #AppBox CLI
+        appboxcli = "appboxcli"
+        appboxcli_path = `which #{appboxcli}`.strip
+        if appboxcli_path.empty?
+          UI.error("AppBox CLI not found. Please install AppBox CLI first. Read more here - https://docs.getappbox.com/Installation/MacOS/#command-line-interface-cli")
           exit
         end
-        
-      end
 
-      # Delete all files/folders in AppBox temporary directory
-      def self.clean_temporary_files(appbox_temp_path)
-        UI.message("Cleaning AppBox temporary directory - #{appbox_temp_path}")
-        if File.directory?(appbox_temp_path)
-          Dir.foreach(appbox_temp_path) do |file|
-            next if file == '.' or file == '..'
-            file_path = File.join(appbox_temp_path, file)
-            if File.file?(file_path)
-              File.delete(file_path)
-            else
-              FileUtils.rm_rf(file_path)
-            end
+        ipa_path = Actions.lane_context[ Actions::SharedValues::IPA_OUTPUT_PATH ]
+        ipa_file_name = File.basename(ipa_path)
+        UI.message("IPA PATH - #{ipa_path}")
+
+        # Start AppBox
+        UI.message("")
+        UI.message("Starting AppBox...")
+        UI.message("Upload process will start soon. Upload process might take a few minutes. Please don't interrupt the script.")
+
+        command = "#{appboxcli} --ipa '#{ipa_path}'"
+
+        #Add emails param in command
+        if params[:emails]
+          command << " --emails '#{params[:emails]}'"
+          UI.message("Emails - #{params[:emails]}")
+        end
+
+        #Add message param in command
+        if params[:message]
+          command << " --message '#{params[:message]}'"
+          UI.message("Message - #{params[:message]}")
+        end
+
+        #Add Keep Same Link param in command
+        if params[:keep_same_link] == true
+          command << " --keepsamelink"
+          UI.message("Keep Same Link - #{params[:keep_same_link]}")
+        end
+
+        #Add dropbox folder name param in command
+        if dropbox_folder_name
+          command << " --dbfolder '#{dropbox_folder_name}'"
+          UI.message("Dropbox Folder Name - #{dropbox_folder_name}")
+        end
+
+        #Add Slack Webhook URL param in command
+        if params[:slack_webhook_url]
+          command << " --slackwebhook '#{params[:slack_webhook_url]}'"
+          UI.message("Slack Webhook URL - #{params[:slack_webhook_url]}")
+        end
+
+        #Add MS Teams Webhook URL param in command
+        if params[:ms_teams_webhook_url]
+          command << " --msteamswebhook '#{params[:ms_teams_webhook_url]}'"
+          UI.message("MS Teams Webhook URL - #{params[:ms_teams_webhook_url]}")
+        end
+
+        #Add Webhook Message param in command
+        if params[:webhook_message]
+          command << " --webhookmessage '#{params[:webhook_message]}'"
+          UI.message("Webhook Message - #{params[:webhook_message]}")
+        end
+
+        UI.message("AppBox Command - #{command}")
+        
+        # Execute command
+        exit_status = system("exec #{command}")
+        
+        # Print upload status
+        if exit_status
+          UI.success("Successfully uploaded the IPA file to DropBox. Check below summary for more details.")
+          # Check if share url file exist and print value
+          share_url_file_path = File.join(File.expand_path('~'), ".appbox_share_value.json")
+          if File.file?(share_url_file_path)
+            file = File.read(share_url_file_path)
+            share_urls_values = JSON.parse(file)
+            Actions.lane_context[SharedValues::APPBOX_IPA_URL] = share_urls_values['APPBOX_IPA_URL']
+            Actions.lane_context[SharedValues::APPBOX_SHARE_URL] = share_urls_values['APPBOX_SHARE_URL']
+            Actions.lane_context[SharedValues::APPBOX_MANIFEST_URL] = share_urls_values['APPBOX_MANIFEST_URL']
+            FastlaneCore::PrintTable.print_values(config: share_urls_values, hide_keys: [], title: "Summary for AppBox")
           end
+          UI.success('AppBox finished successfully')
+        else 
+          UI.error('AppBox finished with errors')
+          UI.message('Please feel free to open an issue on the project GitHub page. Please include a description of what is not working right with your issue. https://github.com/getappbox/fastlane-plugin-appbox/issues/new')
+          exit
         end
       end
 
@@ -121,7 +111,6 @@ module Fastlane
           ['APPBOX_IPA_URL', 'Upload IPA file URL to download IPA file.'],
           ['APPBOX_MANIFEST_URL', 'Manifest file URL for upload application.'],
           ['APPBOX_SHARE_URL', 'AppBox short shareable URL to install uploaded application.'],
-          ['APPBOX_LONG_SHARE_URL', 'AppBox long shareable URL to install uploaded application.']
         ]
       end
 
@@ -142,16 +131,11 @@ module Fastlane
           FastlaneCore::ConfigItem.new(key: :emails,
                                        env_name: "FL_APPBOX_EMAILS",
                                        description: "Comma-separated list of email address that should receive application installation link",
-                                       optional: false),
-
-          FastlaneCore::ConfigItem.new(key: :appbox_path,
-                                       env_name: "FL_APPBOX_PATH",
-                                       description: "If you've setup AppBox in the different directory then you need to mention that here. Default is '/Applications/AppBox.app'",
                                        optional: true),
 
           FastlaneCore::ConfigItem.new(key: :message,
                                        env_name: "FL_APPBOX_MESSAGE",
-                                       description: "Attach personal message in the email. Supported Keywords: The {PROJECT_NAME} - For Project Name, {BUILD_VERSION} - For Build Version, and {BUILD_NUMBER} - For Build Number",
+                                       description: "Attach personal message in the email. Supported Keywords: The {BUILD_NAME} - For Build Name, {BUILD_VERSION} - For Build Version, and {BUILD_NUMBER} - For Build Number",
                                        optional: true),
 
           FastlaneCore::ConfigItem.new(key: :keep_same_link,
@@ -164,6 +148,21 @@ module Fastlane
           FastlaneCore::ConfigItem.new(key: :dropbox_folder_name,
                                        env_name: "FL_APPBOX_DB_FOLDER_NAME",
                                        description: "You can change the link by providing a Custom Dropbox Folder Name. By default folder name will be the application bundle identifier. So, AppBox will keep the same link for the IPA file available in the same folder. Read more here - https://docs.getappbox.com/Features/keepsamelink/",
+                                       optional: true),
+
+          FastlaneCore::ConfigItem.new(key: :slack_webhook_url,
+                                       env_name: "FL_APPBOX_SLACK_WEBHOOK_URL",
+                                       description: "Slack Incoming Webhook URL to send notification to a Slack channel",
+                                       optional: true),
+
+          FastlaneCore::ConfigItem.new(key: :ms_teams_webhook_url,
+                                       env_name: "FL_APPBOX_MS_TEAMS_WEBHOOK_URL",
+                                       description: "Microsoft Teams Incoming Webhook URL to send notification to a Teams channel",
+                                       optional: true),
+
+          FastlaneCore::ConfigItem.new(key: :webhook_message,
+                                       env_name: "FL_APPBOX_WEBHOOK_MESSAGE",
+                                       description: "Custom message to send along with Slack or Microsoft Teams notification. Supported Keywords: {BUILD_NAME}, {BUILD_VERSION}, {BUILD_NUMBER}, {SHARE_URL}",
                                        optional: true),
         ]
       end

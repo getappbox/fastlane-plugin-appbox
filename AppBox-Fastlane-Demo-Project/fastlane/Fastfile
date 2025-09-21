@@ -14,7 +14,7 @@ platform :ios do
     gym
     appbox(
         emails: 'info@developerinsider.in',
-        message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+        message: '{BUILD_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
     )
   end
 
@@ -23,7 +23,7 @@ platform :ios do
     gym
     appbox(
         emails: 'info@developerinsider.in',
-        message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+        message: '{BUILD_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
         keep_same_link: true,
     )
   end
@@ -33,7 +33,7 @@ platform :ios do
     gym
     appbox(
         emails: 'info@developerinsider.in',
-        message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+        message: '{BUILD_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
         keep_same_link: true,
         dropbox_folder_name: 'Fastlane-Demo-Keep-Same-Link',
     )
