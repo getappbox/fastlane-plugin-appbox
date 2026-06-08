@@ -10,7 +10,19 @@
 fastlane add_plugin appbox
 ```
 
-**Step 2** - Download the latest version of AppBox from [here](https://github.com/vineetchoudhary/AppBox-iOSAppsWirelessInstallation/releases) or [here](https://getappbox.com/download) and install it into `/Applications` directory of you mac. Now, open AppBox and login with your Dropbox account.
+**Step 2** - Install AppBox using one of the following methods:
+
+- **Direct Install:**
+  ```bash
+  curl -s https://getappbox.com/install.sh | bash
+  ```
+
+- **Homebrew:**
+  ```bash
+  brew install --cask appbox
+  ```
+
+Now, open AppBox and login with your Dropbox account.
 
 **Step 3** - Define appbox action in your project Fastfile with emails and message. Here the available params for appbox plugins - 
 
@@ -50,7 +62,7 @@ platform :ios do
   lane :gymbox do
     gym
     appbox(
-        emails: 'you@example.com,'someoneelse@example.com',
+        emails: 'you@example.com,someoneelse@example.com',
     )
   end
 end
@@ -116,8 +128,8 @@ platform :ios do
   lane :gymbox do
     gym
     appbox(
-        emails: 'you@example.com,'someoneelse@example.com',
-        appbox_path:'/Users/vineetchoudhary/Desktop/AppBox3.4.0/AppBox.app',
+        emails: 'you@example.com,someoneelse@example.com',
+        appbox_path:'/Users/vineetchoudhary/Desktop/AppBox/AppBox.app',
     )
   end
 end
@@ -133,7 +145,7 @@ When you run this for the first time, a pop-up will appear stating that "Termina
 - `APPBOX_MANIFEST_URL` - Manifest file URL for upload application.   
 
 ## 4. About AppBox
-[AppBox](https://getappbox.com) is a tool for iOS developers to build and deploy Development, Ad-Hoc and In-house (Enterprise) applications directly to the devices from your Dropbox account. Also, available on [Github](https://github.com/vineetchoudhary/AppBox-iOSAppsWirelessInstallation).
+[AppBox](https://getappbox.com) is a tool for iOS developers to build and deploy Development, Ad-Hoc and In-house (Enterprise) applications directly to the devices from your Dropbox account. Also, available on [Github](https://github.com/getappbox/AppBox-iOSAppsWirelessInstallation).
 
 ## 5. Example
 
@@ -142,6 +154,6 @@ Check out the [example `Fastfile`](fastlane/Fastfile) to see how to use this plu
 ## 6. Issues and Feedback
 For any other issues and feedback about this plugin, please submit it to this [repository](https://github.com/getappbox/fastlane-plugin-appbox/issues/new).
 
-## 6. Troubleshooting
+## 7. Troubleshooting
 If you have trouble using plugins, check out the [Plugins Troubleshooting](https://docs.fastlane.tools/plugins/plugins-troubleshooting/) guide.
 
