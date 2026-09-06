@@ -23,21 +23,21 @@ describe Fastlane::Actions::AppboxAction do
     end
 
     it "passes each option through as its own argument" do
-      args = run_with(emails: "a@example.com", message: "ready", dropbox_folder_name: "MyFolder")
+      args = run_with({ emails: "a@example.com", message: "ready", dropbox_folder_name: "MyFolder" })
       expect(args).to include("--emails", "a@example.com")
       expect(args).to include("--message", "ready")
       expect(args).to include("--dbfolder", "MyFolder")
     end
 
     it "sends keepsamelink as a bare flag only when enabled" do
-      expect(run_with(keep_same_link: true)).to include("--keepsamelink")
-      expect(run_with(keep_same_link: false)).not_to include("--keepsamelink")
+      expect(run_with({ keep_same_link: true })).to include("--keepsamelink")
+      expect(run_with({ keep_same_link: false })).not_to include("--keepsamelink")
     end
 
     it "passes the webhook options" do
-      args = run_with(slack_webhook_url: "https://hooks.slack.com/x",
-                      ms_teams_webhook_url: "https://teams.example/y",
-                      webhook_message: "{SHARE_URL}")
+      args = run_with({ slack_webhook_url: "https://hooks.slack.com/x",
+                        ms_teams_webhook_url: "https://teams.example/y",
+                        webhook_message: "{SHARE_URL}" })
       expect(args).to include("--slackwebhook", "https://hooks.slack.com/x")
       expect(args).to include("--msteamswebhook", "https://teams.example/y")
       expect(args).to include("--webhookmessage", "{SHARE_URL}")
@@ -46,13 +46,13 @@ describe Fastlane::Actions::AppboxAction do
     # The old implementation interpolated into a single-quoted shell string, so
     # an apostrophe produced a command the shell could not parse at all.
     it "survives a value containing quotes and spaces" do
-      args = run_with(message: "Build ready - don't miss it", dropbox_folder_name: "My Folder")
+      args = run_with({ message: "Build ready - don't miss it", dropbox_folder_name: "My Folder" })
       expect(args[args.index("--message") + 1]).to eq("Build ready - don't miss it")
       expect(args[args.index("--dbfolder") + 1]).to eq("My Folder")
     end
 
     it "runs without a shell, so no argument needs escaping" do
-      args = run_with(message: "a; rm -rf /")
+      args = run_with({ message: "a; rm -rf /" })
       expect(args.first).to eq("appboxcli")
       expect(args[args.index("--message") + 1]).to eq("a; rm -rf /")
     end
