@@ -107,16 +107,34 @@ if ruby -e 'exit(Gem::Version.new(Gem.rubygems_version.to_s) < Gem::Version.new(
   warn "a newer ruby is likely already available — try:  rbenv shell 3.3.10  (or: rbenv versions)"
 fi
 
+credentials_key_usable() {
+  ruby -e 'require "rubygems"; exit(Gem.configuration.rubygems_api_key.to_s.empty? ? 1 : 0)' 2>/dev/null
+}
+
 if [ "$PUBLISH" -eq 1 ]; then
   step "Credentials"
 
   if [ -n "${GEM_HOST_API_KEY:-}" ]; then
     pass "using GEM_HOST_API_KEY from the environment"
-  elif [ -f "$HOME/.gem/credentials" ] && grep -q "rubygems_api_key" "$HOME/.gem/credentials"; then
+  elif [ -f "$HOME/.gem/credentials" ] && credentials_key_usable; then
     pass "using the API key in ~/.gem/credentials"
     perms="$(stat -f '%Lp' "$HOME/.gem/credentials")"
     [ "$perms" = "600" ] || warn "~/.gem/credentials is mode $perms; RubyGems expects 0600"
   else
+    if [ -f "$HOME/.gem/credentials" ]; then
+      printf '\n\033[31m✗ ~/.gem/credentials exists, but RubyGems cannot read a key from it.\033[0m\n\n'
+      cat <<'HELP'
+  The file has to parse as a YAML hash. The usual cause is a missing space after
+  the colon: ":rubygems_api_key:rubygems_xxx" is a plain string to YAML, not a
+  hash, which is what "doesn't contain valid YAML hash" is reporting.
+
+  Correct form, and the space after the colon matters:
+       ---
+       :rubygems_api_key: rubygems_xxxxxxxx
+
+HELP
+      exit 1
+    fi
     printf '\n\033[31m✗ No RubyGems API key found.\033[0m\n\n'
     if [ "$MODERN_RUBYGEMS" -eq 1 ]; then
       cat <<'HELP'
