@@ -8,9 +8,22 @@
 #   scripts/release-gem.sh --publish           …then push to RubyGems and tag
 #   scripts/release-gem.sh --version 4.1.0 --publish
 #   scripts/release-gem.sh --skip-tests
+#   scripts/release-gem.sh --publish --otp 123456    MFA code
+#   scripts/release-gem.sh --publish --yes           skip the confirmation (CI)
 #
 # Nothing is pushed without --publish. The git tag is created locally; pushing
 # it is left to you.
+#
+# Credentials: `gem signin` was retired by RubyGems — it no longer accepts a
+# password. Create an API key with the `push_rubygem` scope at
+# https://rubygems.org/profile/api_keys and then either
+#
+#   export GEM_HOST_API_KEY=rubygems_xxxxxxxx     (needs RubyGems >= 3.1)
+#
+# or write it once to ~/.gem/credentials:
+#
+#   mkdir -p ~/.gem && printf -- '---\n:rubygems_api_key: rubygems_xxxxxxxx\n' > ~/.gem/credentials
+#   chmod 0600 ~/.gem/credentials
 #
 set -uo pipefail
 
@@ -23,12 +36,17 @@ GEM_NAME="fastlane-plugin-appbox"
 NEW_VERSION=""
 PUBLISH=0
 SKIP_TESTS=0
+OTP=""
+ASSUME_YES=0
+MODERN_RUBYGEMS=1
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --version) NEW_VERSION="${2:?--version needs a value like 4.0.1}"; shift ;;
     --publish) PUBLISH=1 ;;
     --skip-tests) SKIP_TESTS=1 ;;
+    --otp) OTP="${2:?--otp needs the 6-digit code}"; shift ;;
+    --yes|-y) ASSUME_YES=1 ;;
     -h|--help) sed -n '2,15p' "$0" | sed 's/^#//'; exit 0 ;;
     *) echo "Unknown option: $1"; exit 1 ;;
   esac
@@ -59,10 +77,84 @@ if [ "$SKIP_TESTS" -eq 1 ]; then
   warn "skipping tests (--skip-tests)"
 else
   step "Tests and lint"
-  bundle exec rspec >/dev/null 2>&1 || die "rspec failed — run 'bundle exec rspec' to see why"
-  pass "rspec"
+  RSPEC_OUT="$(bundle exec rspec 2>&1)"
+  if [ $? -ne 0 ]; then
+    # The usual cause when switching ruby versions: the bundle was installed for
+    # a different one, so nothing is actually wrong with the tests.
+    if printf '%s' "$RSPEC_OUT" | grep -q "GemNotFound\|Could not find .* in locally installed gems"; then
+      warn "the bundle is not installed for ruby $(ruby -e 'print RUBY_VERSION')"
+      die "run 'bundle install' first (each ruby version needs its own bundle)"
+    fi
+    printf '%s\n' "$RSPEC_OUT" | tail -25
+    die "rspec failed"
+  fi
+  pass "rspec ($(printf '%s' "$RSPEC_OUT" | grep -oE '[0-9]+ examples?, [0-9]+ failures?' | tail -1))"
   bundle exec rubocop >/dev/null 2>&1 || warn "rubocop reported offences (not blocking)"
   pass "rubocop run"
+fi
+
+step "Toolchain"
+
+RUBY_VERSION_NOW="$(ruby -e 'print RUBY_VERSION')"
+GEM_VERSION_NOW="$(gem --version)"
+pass "ruby $RUBY_VERSION_NOW, rubygems $GEM_VERSION_NOW"
+
+# RubyGems only learned GEM_HOST_API_KEY in 3.1, and Ruby 2.6 is long EOL.
+MODERN_RUBYGEMS=1
+if ruby -e 'exit(Gem::Version.new(Gem.rubygems_version.to_s) < Gem::Version.new("3.1.0") ? 0 : 1)'; then
+  MODERN_RUBYGEMS=0
+  warn "rubygems $GEM_VERSION_NOW is old: GEM_HOST_API_KEY is ignored, only ~/.gem/credentials works"
+  warn "a newer ruby is likely already available — try:  rbenv shell 3.3.10  (or: rbenv versions)"
+fi
+
+if [ "$PUBLISH" -eq 1 ]; then
+  step "Credentials"
+
+  if [ -n "${GEM_HOST_API_KEY:-}" ]; then
+    pass "using GEM_HOST_API_KEY from the environment"
+  elif [ -f "$HOME/.gem/credentials" ] && grep -q "rubygems_api_key" "$HOME/.gem/credentials"; then
+    pass "using the API key in ~/.gem/credentials"
+    perms="$(stat -f '%Lp' "$HOME/.gem/credentials")"
+    [ "$perms" = "600" ] || warn "~/.gem/credentials is mode $perms; RubyGems expects 0600"
+  else
+    printf '\n\033[31m✗ No RubyGems API key found.\033[0m\n\n'
+    if [ "$MODERN_RUBYGEMS" -eq 1 ]; then
+      cat <<'HELP'
+  `gem signin` no longer works — RubyGems retired password authentication.
+
+  1. Create an API key with the "push_rubygem" scope:
+       https://rubygems.org/profile/api_keys
+
+  2. Either export it for this shell:
+       export GEM_HOST_API_KEY=rubygems_xxxxxxxx
+
+     or store it once:
+       mkdir -p ~/.gem
+       echo '---' > ~/.gem/credentials
+       echo ':rubygems_api_key: rubygems_xxxxxxxx' >> ~/.gem/credentials
+       chmod 0600 ~/.gem/credentials
+
+HELP
+    else
+      cat <<'HELP'
+  `gem signin` no longer works — RubyGems retired password authentication.
+
+  This RubyGems is too old to read GEM_HOST_API_KEY, so the key must be stored
+  in a file (or switch to a newer ruby first — see the toolchain warning above).
+
+  1. Create an API key with the "push_rubygem" scope:
+       https://rubygems.org/profile/api_keys
+
+  2. Store it:
+       mkdir -p ~/.gem
+       echo '---' > ~/.gem/credentials
+       echo ':rubygems_api_key: rubygems_xxxxxxxx' >> ~/.gem/credentials
+       chmod 0600 ~/.gem/credentials
+
+HELP
+    fi
+    exit 1
+  fi
 fi
 
 step "Sanity checks"
@@ -115,14 +207,29 @@ fi
 # ---------------------------------------------------------------- publish
 step "Publishing to RubyGems"
 printf '  About to push \033[1m%s %s\033[0m to RubyGems. This cannot be undone.\n' "$GEM_NAME" "$VERSION"
-printf '  Continue? (y/N): '
-read -r answer < /dev/tty
-case "$answer" in
-  y|Y) ;;
-  *) die "Cancelled." ;;
-esac
+if [ "$ASSUME_YES" -eq 1 ]; then
+  pass "confirmed by --yes"
+elif [ -r /dev/tty ]; then
+  printf '  Continue? (y/N): '
+  answer=""
+  read -r answer < /dev/tty || answer=""
+  case "$answer" in
+    y|Y) ;;
+    *) die "Cancelled." ;;
+  esac
+else
+  die "No terminal to confirm on. Re-run with --yes if this is intentional (e.g. CI)."
+fi
 
-gem push "$GEM_PATH" || die "gem push failed — check your RubyGems credentials (gem signin)"
+PUSH_ARGS=("$GEM_PATH")
+[ -n "$OTP" ] && PUSH_ARGS+=(--otp "$OTP")
+
+if ! gem push "${PUSH_ARGS[@]}"; then
+  printf '\n'
+  warn "if that asked for a one-time password, re-run with:  --otp <code>"
+  warn "if it rejected the key, check the scope includes push_rubygem"
+  die "gem push failed"
+fi
 pass "published $GEM_NAME $VERSION"
 
 step "Tagging"
