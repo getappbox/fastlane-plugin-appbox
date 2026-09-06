@@ -1,0 +1,68 @@
+name: Test
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Ruby ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ['3.1', '3.2', '3.3']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Installs the Ruby, runs bundler and caches the gems in one step.
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      # rspec plus rubocop, the same as running it locally.
+      - name: rake (rspec + rubocop)
+        run: bundle exec rake
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-ruby-${{ matrix.ruby }}
+          path: test-results/
+          if-no-files-found: ignore
+
+  gem:
+    name: Gem builds and loads
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+
+      - name: Build the gem
+        run: gem build fastlane-plugin-appbox.gemspec
+
+      - name: Install it and load the action
+        run: |
+          gem install fastlane --no-document
+          gem install ./fastlane-plugin-appbox-*.gem --no-document
+          ruby -e "
+            require 'fastlane'
+            require 'fastlane/plugin/appbox'
+            raise 'AppboxAction was not defined' unless defined?(Fastlane::Actions::AppboxAction)
+            raise 'action is not registered' unless Fastlane::Actions.action_class_ref('appbox')
+            puts 'AppboxAction loaded from the built gem'
+          "

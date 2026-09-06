@@ -1,6 +1,7 @@
 # AppBox Plugin for Fastlane
 
 [![fastlane Plugin Badge](https://rawcdn.githack.com/fastlane/fastlane/master/fastlane/assets/plugin-badge.svg)](https://rubygems.org/gems/fastlane-plugin-appbox)
+[![Test](https://github.com/getappbox/fastlane-plugin-appbox/actions/workflows/test.yml/badge.svg)](https://github.com/getappbox/fastlane-plugin-appbox/actions/workflows/test.yml)
 
 ## 1. Getting Started
 
