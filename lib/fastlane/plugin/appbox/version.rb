@@ -1,5 +1,5 @@
 module Fastlane
   module Appbox
-    VERSION = "3.7.0"
+    VERSION = "4.0.0"
   end
 end

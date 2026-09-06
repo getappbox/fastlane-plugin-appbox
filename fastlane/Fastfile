@@ -26,12 +26,13 @@ lane :testEmailWithCustomMessage do
 end
 
 
-desc "Upload IPA file where AppBox available at some custom path instead of macOS Application Directory."
-lane :testAppBoxWithCustomPath do
+desc "Upload IPA file and notify a Slack or Microsoft Teams channel."
+lane :testWebhook do
   gym
   appbox(
-    emails:'info@developerinsider.in', 
-    appbox_path:'/Users/vineetchoudhary/Desktop/AppBox2.8.0/AppBox.app',
+    emails: 'info@developerinsider.in',
+    slack_webhook_url: ENV['SLACK_WEBHOOK_URL'],
+    webhook_message: '{BUILD_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready: {SHARE_URL}',
   )
 end
 

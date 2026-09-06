@@ -1,4 +1,5 @@
 require "json"
+require "shellwords"
 require 'fastlane/action'
 require_relative '../helper/appbox_helper'
 
@@ -19,16 +20,18 @@ module Fastlane
           UI.message("Dropbox folder name - #{dropbox_folder_name}")
         end
 
-        #AppBox CLI
+        # AppBox CLI
         appboxcli = "appboxcli"
         appboxcli_path = `which #{appboxcli}`.strip
         if appboxcli_path.empty?
-          UI.error("AppBox CLI not found. Please install AppBox CLI first. Read more here - https://docs.getappbox.com/Installation/MacOS/#command-line-interface-cli")
-          exit
+          UI.user_error!("AppBox CLI not found. Install it from AppBox Preferences > General, or read more here - https://docs.getappbox.com/CommandLineInterface/")
         end
 
-        ipa_path = Actions.lane_context[ Actions::SharedValues::IPA_OUTPUT_PATH ]
-        ipa_file_name = File.basename(ipa_path)
+        ipa_path = Actions.lane_context[Actions::SharedValues::IPA_OUTPUT_PATH]
+        if ipa_path.nil? || ipa_path.to_s.empty?
+          UI.user_error!("No IPA found. Run `gym`/`build_app` before `appbox`, or set lane_context[SharedValues::IPA_OUTPUT_PATH] yourself.")
+        end
+        UI.user_error!("IPA not found at #{ipa_path}") unless File.exist?(ipa_path)
         UI.message("IPA PATH - #{ipa_path}")
 
         # Start AppBox
@@ -36,55 +39,50 @@ module Fastlane
         UI.message("Starting AppBox...")
         UI.message("Upload process will start soon. Upload process might take a few minutes. Please don't interrupt the script.")
 
-        command = "#{appboxcli} --ipa '#{ipa_path}'"
+        # Built as an argv array and run without a shell, so a value containing a
+        # quote or a space cannot break the command.
+        args = [appboxcli, "--ipa", ipa_path.to_s]
 
-        #Add emails param in command
         if params[:emails]
-          command << " --emails '#{params[:emails]}'"
+          args += ["--emails", params[:emails].to_s]
           UI.message("Emails - #{params[:emails]}")
         end
 
-        #Add message param in command
         if params[:message]
-          command << " --message '#{params[:message]}'"
+          args += ["--message", params[:message].to_s]
           UI.message("Message - #{params[:message]}")
         end
 
-        #Add Keep Same Link param in command
         if params[:keep_same_link] == true
-          command << " --keepsamelink"
+          args << "--keepsamelink"
           UI.message("Keep Same Link - #{params[:keep_same_link]}")
         end
 
-        #Add dropbox folder name param in command
         if dropbox_folder_name
-          command << " --dbfolder '#{dropbox_folder_name}'"
+          args += ["--dbfolder", dropbox_folder_name.to_s]
           UI.message("Dropbox Folder Name - #{dropbox_folder_name}")
         end
 
-        #Add Slack Webhook URL param in command
         if params[:slack_webhook_url]
-          command << " --slackwebhook '#{params[:slack_webhook_url]}'"
+          args += ["--slackwebhook", params[:slack_webhook_url].to_s]
           UI.message("Slack Webhook URL - #{params[:slack_webhook_url]}")
         end
 
-        #Add MS Teams Webhook URL param in command
         if params[:ms_teams_webhook_url]
-          command << " --msteamswebhook '#{params[:ms_teams_webhook_url]}'"
+          args += ["--msteamswebhook", params[:ms_teams_webhook_url].to_s]
           UI.message("MS Teams Webhook URL - #{params[:ms_teams_webhook_url]}")
         end
 
-        #Add Webhook Message param in command
         if params[:webhook_message]
-          command << " --webhookmessage '#{params[:webhook_message]}'"
+          args += ["--webhookmessage", params[:webhook_message].to_s]
           UI.message("Webhook Message - #{params[:webhook_message]}")
         end
 
-        UI.message("AppBox Command - #{command}")
-        
-        # Execute command
-        exit_status = system("exec #{command}")
-        
+        UI.message("AppBox Command - #{Shellwords.join(args)}")
+
+        # Execute without a shell.
+        exit_status = system(*args)
+
         # Print upload status
         if exit_status
           UI.success("Successfully uploaded the IPA file to DropBox. Check below summary for more details.")
@@ -99,10 +97,9 @@ module Fastlane
             FastlaneCore::PrintTable.print_values(config: share_urls_values, hide_keys: [], title: "Summary for AppBox")
           end
           UI.success('AppBox finished successfully')
-        else 
+        else
           UI.error('AppBox finished with errors')
-          UI.message('Please feel free to open an issue on the project GitHub page. Please include a description of what is not working right with your issue. https://github.com/getappbox/fastlane-plugin-appbox/issues/new')
-          exit
+          UI.user_error!('AppBox upload failed. Please feel free to open an issue on the project GitHub page, including a description of what is not working. https://github.com/getappbox/fastlane-plugin-appbox/issues/new')
         end
       end
 

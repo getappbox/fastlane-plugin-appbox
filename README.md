@@ -26,13 +26,15 @@ Now, open AppBox and login with your Dropbox account.
 
 **Step 3** - Define appbox action in your project Fastfile with emails and message. Here the available params for appbox plugins - 
 
-- `emails` (Required | String) - Comma-separated list of email address that should receive application installation link.
+- `emails` (Optional | String) - Comma-separated list of email address that should receive application installation link.
 - `message` (Optional | String) - Attach personal message in the email. Supported Keywords:  
     >The {PROJECT_NAME} - For Project Name,    
     >{BUILD_VERSION} - For Build Version, and   
     >{BUILD_NUMBER} - For Build Number.
-- `appbox_path` (Optional | String) - If you've setup AppBox in the different directory then you need to mention that here. Default is `/Applications/AppBox.app`
 - `keep_same_link` (Optional | Bool) - This feature will keep same short URL for all future build/IPA uploaded with same bundle identifier. If this option is enabled, you can also download the previous build with the same URL. Read more [here](https://docs.getappbox.com/Features/keepsamelink/). 
+- `slack_webhook_url` (Optional | String) - Slack Incoming Webhook URL to post a notification to a Slack channel.
+- `ms_teams_webhook_url` (Optional | String) - Microsoft Teams Incoming Webhook URL to post a notification to a Teams channel.
+- `webhook_message` (Optional | String) - Custom message sent with the Slack/Teams notification. Supported keywords: `{BUILD_NAME}`, `{BUILD_VERSION}`, `{BUILD_NUMBER}`, `{SHARE_URL}`.
 - `dropbox_folder_name` (Optional | String) - You can change the link by providing a Custom Dropbox Folder Name. By default folder name will be the application bundle identifier. So, AppBox will keep the same link for the IPA file available in the same folder. Read more [here](https://docs.getappbox.com/Features/keepsamelink/).
 
 
@@ -114,22 +116,6 @@ platform :ios do
         message: '{PROJECT_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
         keep_same_link: true,
         dropbox_folder_name: 'Fastlane-Demo-Keep-Same-Link',
-    )
-  end
-end
-```
-
-#### 6. Upload IPA file where AppBox available at some custom path instead of macOS Application Directory.
-
-```rb
-default_platform(:ios)
-
-platform :ios do
-  lane :gymbox do
-    gym
-    appbox(
-        emails: 'you@example.com,someoneelse@example.com',
-        appbox_path:'/Users/vineetchoudhary/Desktop/AppBox/AppBox.app',
     )
   end
 end
