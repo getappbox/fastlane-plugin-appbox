@@ -132,7 +132,7 @@ module Fastlane
 
           FastlaneCore::ConfigItem.new(key: :message,
                                        env_name: "FL_APPBOX_MESSAGE",
-                                       description: "Attach personal message in the email. Supported Keywords: The {BUILD_NAME} - For Build Name, {BUILD_VERSION} - For Build Version, and {BUILD_NUMBER} - For Build Number",
+                                       description: "A personal message shown under \"Message from the developer\" in the email. Sent verbatim; AppBox 4 does not substitute {BUILD_NAME}/{BUILD_VERSION}/{BUILD_NUMBER} placeholders",
                                        optional: true),
 
           FastlaneCore::ConfigItem.new(key: :keep_same_link,
@@ -159,7 +159,7 @@ module Fastlane
 
           FastlaneCore::ConfigItem.new(key: :webhook_message,
                                        env_name: "FL_APPBOX_WEBHOOK_MESSAGE",
-                                       description: "Custom message to send along with Slack or Microsoft Teams notification. Supported Keywords: {BUILD_NAME}, {BUILD_VERSION}, {BUILD_NUMBER}, {SHARE_URL}",
+                                       description: "Deprecated and ignored since AppBox 4 — the notification text is generated from the build. Accepted so existing Fastfiles keep working",
                                        optional: true),
         ]
       end

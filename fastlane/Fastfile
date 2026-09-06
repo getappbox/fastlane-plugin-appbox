@@ -21,7 +21,7 @@ lane :testEmailWithCustomMessage do
   gym
   appbox(
     emails:'info@developerinsider.in',
-    message: '{BUILD_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+    message: "#{File.basename(lane_context[SharedValues::IPA_OUTPUT_PATH], '.ipa')} is ready to test.",
   )
 end
 
@@ -32,7 +32,7 @@ lane :testWebhook do
   appbox(
     emails: 'info@developerinsider.in',
     slack_webhook_url: ENV['SLACK_WEBHOOK_URL'],
-    webhook_message: '{BUILD_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready: {SHARE_URL}',
+    # webhook_message is ignored by AppBox 4; the notification text comes from the build.
   )
 end
 
@@ -42,7 +42,7 @@ lane :testKeepSameLink do
   gym
   appbox(
     emails:'info@developerinsider.in', 
-    message: '{BUILD_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+    message: "#{File.basename(lane_context[SharedValues::IPA_OUTPUT_PATH], '.ipa')} is ready to test.",
     keep_same_link: true,
   )
 end
@@ -52,7 +52,7 @@ lane :testCustomDBFolderName do
   gym
   appbox(
     emails:'info@developerinsider.in', 
-    message: '{BUILD_NAME} - {BUILD_VERSION}({BUILD_NUMBER}) is ready to test.',
+    message: "#{File.basename(lane_context[SharedValues::IPA_OUTPUT_PATH], '.ipa')} is ready to test.",
     keep_same_link: true,
     dropbox_folder_name: 'Fastlane-Demo-Keep-Same-Link',
   )
