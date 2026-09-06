@@ -110,6 +110,9 @@ trap 'rm -rf "$WORK"' EXIT
 mkdir -p "$WORK/fastlane"
 
 {
+  # Load the plugin straight from this checkout.
+  echo "require '$ROOT/lib/fastlane/plugin/appbox'"
+  echo
   echo "default_platform(:ios)"
   echo
   echo "platform :ios do"
@@ -128,10 +131,8 @@ mkdir -p "$WORK/fastlane"
   echo "end"
 } > "$WORK/fastlane/Fastfile"
 
-echo "gem 'fastlane-plugin-appbox', path: '$ROOT'" > "$WORK/fastlane/Pluginfile"
-
 rm -f "$SHARE_FILE"
-(cd "$WORK" && fastlane demo)
+(cd "$WORK" && FASTLANE_SKIP_UPDATE_CHECK=1 FASTLANE_HIDE_CHANGELOG=1 fastlane demo)
 STATUS=$?
 
 step "Result"
