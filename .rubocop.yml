@@ -130,6 +130,7 @@ AllCops:
   - "./vendor/**/*"
   - "**/lib/assets/DefaultFastfileTemplate"
   - "**/spec/fixtures/broken_files/broken_file.rb"
+  - "./AppBox-Fastlane-Demo-Project/**/*"
 Style/FileName:
   Exclude:
   - "**/Dangerfile"

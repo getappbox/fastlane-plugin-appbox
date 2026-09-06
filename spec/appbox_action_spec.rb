@@ -5,7 +5,10 @@ describe Fastlane::Actions::AppboxAction do
   def run_with(params, ipa_path: ipa)
     captured = nil
     allow(Fastlane::Actions::AppboxAction).to receive(:`).with("which appboxcli").and_return("/usr/local/bin/appboxcli\n")
-    allow(Fastlane::Actions::AppboxAction).to receive(:system) { |*args| captured = args; true }
+    allow(Fastlane::Actions::AppboxAction).to receive(:system) do |*args|
+      captured = args
+      true
+    end
     allow(File).to receive(:exist?).and_call_original
     allow(File).to receive(:exist?).with(ipa_path).and_return(true)
     allow(File).to receive(:file?).and_call_original
@@ -31,16 +34,20 @@ describe Fastlane::Actions::AppboxAction do
 
     it "sends keepsamelink as a bare flag only when enabled" do
       expect(run_with({ keep_same_link: true })).to include("--keepsamelink")
-      expect(run_with({ keep_same_link: false })).not_to include("--keepsamelink")
+      expect(run_with({ keep_same_link: false })).not_to(include("--keepsamelink"))
     end
 
-    it "passes the webhook options" do
+    it "passes the webhook URLs" do
       args = run_with({ slack_webhook_url: "https://hooks.slack.com/x",
-                        ms_teams_webhook_url: "https://teams.example/y",
-                        webhook_message: "{SHARE_URL}" })
+                        ms_teams_webhook_url: "https://teams.example/y" })
       expect(args).to include("--slackwebhook", "https://hooks.slack.com/x")
       expect(args).to include("--msteamswebhook", "https://teams.example/y")
-      expect(args).to include("--webhookmessage", "{SHARE_URL}")
+    end
+
+    it "accepts webhook_message but no longer forwards it to the CLI" do
+      args = run_with({ webhook_message: "anything at all" })
+      expect(args).not_to(include("--webhookmessage"))
+      expect(args).not_to(include("anything at all"))
     end
 
     # The old implementation interpolated into a single-quoted shell string, so

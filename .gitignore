@@ -16,3 +16,4 @@ AppBox-Fastlane-Demo-Project/fastlane/report.xml
 *.xcuserstate
 .DS_Store
 *.profraw
+/pkg/

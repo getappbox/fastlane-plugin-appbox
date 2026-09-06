@@ -24,15 +24,34 @@ fastlane add_plugin appbox
 
 Now, open AppBox and login with your Dropbox account.
 
+This plugin targets **AppBox 4.0 or later**, which requires macOS 15 Sequoia or later.
+
 **Step 3** - Define appbox action in your project Fastfile with emails and message. Here the available params for appbox plugins - 
 
 - `emails` (Optional | String) - Comma-separated list of email address that should receive application installation link.
-- `message` (Optional | String) - A personal message shown under "Message from the developer" in the email. Sent verbatim — AppBox 4 no longer substitutes `{PROJECT_NAME}` / `{BUILD_VERSION}` / `{BUILD_NUMBER}` placeholders, so build them yourself from fastlane's own variables (see the examples below).
+- `message` (Optional | String) - A personal message shown under "Message from the developer" in the email, such as `'Here is the latest build.'`. Sent exactly as written — see [Using build details in the message](#using-build-details-in-the-message) to include the version or build number, or if you are moving off the AppBox 3 placeholders.
 - `keep_same_link` (Optional | Bool) - This feature will keep same short URL for all future build/IPA uploaded with same bundle identifier. If this option is enabled, you can also download the previous build with the same URL. Read more [here](https://docs.getappbox.com/Features/keepsamelink/). 
 - `slack_webhook_url` (Optional | String) - Slack Incoming Webhook URL to post a notification to a Slack channel.
 - `ms_teams_webhook_url` (Optional | String) - Microsoft Teams Incoming Webhook URL to post a notification to a Teams channel.
-- `webhook_message` (Optional | String) - **Deprecated and ignored since AppBox 4.** The CLI prints a note and generates the notification text from the build itself. Still accepted so existing Fastfiles keep working.
+- `webhook_message` (Optional | String) - **Deprecated and ignored since AppBox 4**, which generates the notification text from the build itself. The plugin warns and drops it, so existing Fastfiles keep working unchanged.
 - `dropbox_folder_name` (Optional | String) - You can change the link by providing a Custom Dropbox Folder Name. By default folder name will be the application bundle identifier. So, AppBox will keep the same link for the IPA file available in the same folder. Read more [here](https://docs.getappbox.com/Features/keepsamelink/).
+
+### Using build details in the message
+
+`message` is plain text and is sent exactly as written, so most Fastfiles just pass a sentence. To include the version, build number or app name, interpolate them from fastlane in a **double-quoted** string, since Ruby only expands `#{}` there:
+
+```rb
+message: "MyApp #{get_version_number}(#{get_build_number}) is ready to test.",
+```
+
+AppBox 3 used to do this for you by substituting `{BUILD_NAME}`, `{BUILD_VERSION}` and `{BUILD_NUMBER}`. AppBox 4 removed that substitution, so a message still containing them arrives with the braces intact. Replace them as follows:
+
+| AppBox 3 placeholder | Replace with |
+| --- | --- |
+| `{BUILD_NAME}` | your app or scheme name, or `#{File.basename(lane_context[SharedValues::IPA_OUTPUT_PATH], '.ipa')}` |
+| `{BUILD_VERSION}` | `#{get_version_number}` |
+| `{BUILD_NUMBER}` | `#{get_build_number}` |
+| `{SHARE_URL}` | Nothing to do. It only applied to `webhook_message`, which AppBox 4 ignores and generates itself. |
 
 
 ## 2. Demo Fastfile with a lane `gymbox` with Different Options
@@ -77,7 +96,7 @@ platform :ios do
     gym
     appbox(
         emails: 'you@example.com',
-        message: "#{lane_context[SharedValues::IPA_OUTPUT_PATH] ? File.basename(lane_context[SharedValues::IPA_OUTPUT_PATH], '.ipa') : 'Build'} is ready to test.",
+        message: 'Please test the new checkout flow.',
     )
   end
 end
@@ -93,7 +112,7 @@ platform :ios do
     gym
     appbox(
         emails: 'you@example.com',
-        message: "#{lane_context[SharedValues::IPA_OUTPUT_PATH] ? File.basename(lane_context[SharedValues::IPA_OUTPUT_PATH], '.ipa') : 'Build'} is ready to test.",
+        message: 'Here is the latest build.',
         keep_same_link: true,
     )
   end
@@ -110,17 +129,13 @@ platform :ios do
     gym
     appbox(
         emails: 'you@example.com',
-        message: "#{lane_context[SharedValues::IPA_OUTPUT_PATH] ? File.basename(lane_context[SharedValues::IPA_OUTPUT_PATH], '.ipa') : 'Build'} is ready to test.",
+        message: 'Here is the latest build.',
         keep_same_link: true,
         dropbox_folder_name: 'Fastlane-Demo-Keep-Same-Link',
     )
   end
 end
 ```
-
-#### Note
-When you run this for the first time, a pop-up will appear stating that "Terminal.app" wants to access data from other apps. You must allow this to copy the IPA file to the Appbox temporary directory, enabling Appbox to access and upload it.
-![](/AppBox-Fastlane-Demo-Project/images/terminal-permission.webp)
 
 ## 3. Supported AppBox link access via Fastlane SharedValues
 - `APPBOX_SHARE_URL` - AppBox short shareable URL to install uploaded application.   

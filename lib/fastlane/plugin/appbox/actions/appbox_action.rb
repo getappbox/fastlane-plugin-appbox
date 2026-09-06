@@ -13,8 +13,7 @@ module Fastlane
 
     class AppboxAction < Action
       def self.run(params)
-
-        #custom dropbox folder name
+        # custom dropbox folder name
         if params[:dropbox_folder_name]
           dropbox_folder_name = params[:dropbox_folder_name]
           UI.message("Dropbox folder name - #{dropbox_folder_name}")
@@ -74,8 +73,7 @@ module Fastlane
         end
 
         if params[:webhook_message]
-          args += ["--webhookmessage", params[:webhook_message].to_s]
-          UI.message("Webhook Message - #{params[:webhook_message]}")
+          UI.important("webhook_message is deprecated and ignored since AppBox 4 - the notification text is generated from the build.")
         end
 
         UI.message("AppBox Command - #{Shellwords.join(args)}")
@@ -107,7 +105,7 @@ module Fastlane
         [
           ['APPBOX_IPA_URL', 'Upload IPA file URL to download IPA file.'],
           ['APPBOX_MANIFEST_URL', 'Manifest file URL for upload application.'],
-          ['APPBOX_SHARE_URL', 'AppBox short shareable URL to install uploaded application.'],
+          ['APPBOX_SHARE_URL', 'AppBox short shareable URL to install uploaded application.']
         ]
       end
 
@@ -132,7 +130,7 @@ module Fastlane
 
           FastlaneCore::ConfigItem.new(key: :message,
                                        env_name: "FL_APPBOX_MESSAGE",
-                                       description: "A personal message shown under \"Message from the developer\" in the email. Sent verbatim; AppBox 4 does not substitute {BUILD_NAME}/{BUILD_VERSION}/{BUILD_NUMBER} placeholders",
+                                       description: "A personal message shown under \"Message from the developer\" in the email, e.g. 'Here is the latest build.'. Sent exactly as written; AppBox 4 does not substitute the {BUILD_NAME}/{BUILD_VERSION}/{BUILD_NUMBER} placeholders AppBox 3 supported",
                                        optional: true),
 
           FastlaneCore::ConfigItem.new(key: :keep_same_link,
@@ -159,13 +157,13 @@ module Fastlane
 
           FastlaneCore::ConfigItem.new(key: :webhook_message,
                                        env_name: "FL_APPBOX_WEBHOOK_MESSAGE",
-                                       description: "Deprecated and ignored since AppBox 4 — the notification text is generated from the build. Accepted so existing Fastfiles keep working",
-                                       optional: true),
+                                       description: "Deprecated and ignored since AppBox 4, which generates the notification text from the build. Accepted, with a warning, so existing Fastfiles keep working",
+                                       optional: true)
         ]
       end
 
       def self.is_supported?(platform)
-        [:ios].include? platform
+        [:ios].include?(platform)
       end
     end
   end
