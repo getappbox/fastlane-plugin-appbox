@@ -12,6 +12,17 @@ module Fastlane
     end
 
     class AppboxAction < Action
+      # Install-page toggles: option key, appboxcli flag, log label. Unset ones are
+      # left out so the CLI falls back to the AppBox app setting, then its default.
+      INSTALL_PAGE_TOGGLES = [
+        [:more_details, "moredetails", "More Details"],
+        [:ipa_link, "ipalink", "IPA Link"],
+        [:previous_versions, "previousversions", "Previous Versions"]
+      ].freeze
+
+      # appboxcli's exit code when the build is live but the email could not be sent.
+      EMAIL_FAILED_EXIT_CODE = 111
+
       def self.run(params)
         # custom dropbox folder name
         if params[:dropbox_folder_name]
@@ -76,29 +87,64 @@ module Fastlane
           UI.important("webhook_message is deprecated and ignored since AppBox 4 - the notification text is generated from the build.")
         end
 
+        page_args = install_page_args(params)
+        args += page_args
+
         UI.message("AppBox Command - #{Shellwords.join(args)}")
 
-        # Execute without a shell.
-        exit_status = system(*args)
+        exit_code = run_cli(args)
 
         # Print upload status
-        if exit_status
+        if [0, EMAIL_FAILED_EXIT_CODE].include?(exit_code)
           UI.success("Successfully uploaded the IPA file to DropBox. Check below summary for more details.")
-          # Check if share url file exist and print value
-          share_url_file_path = File.join(File.expand_path('~'), ".appbox_share_value.json")
-          if File.file?(share_url_file_path)
-            file = File.read(share_url_file_path)
-            share_urls_values = JSON.parse(file)
-            Actions.lane_context[SharedValues::APPBOX_IPA_URL] = share_urls_values['APPBOX_IPA_URL']
-            Actions.lane_context[SharedValues::APPBOX_SHARE_URL] = share_urls_values['APPBOX_SHARE_URL']
-            Actions.lane_context[SharedValues::APPBOX_MANIFEST_URL] = share_urls_values['APPBOX_MANIFEST_URL']
-            FastlaneCore::PrintTable.print_values(config: share_urls_values, hide_keys: [], title: "Summary for AppBox")
+          export_share_values
+          if exit_code == EMAIL_FAILED_EXIT_CODE
+            UI.error("The build is live, but AppBox couldn't send the email to #{params[:emails]}. Share APPBOX_SHARE_URL from the summary above with your testers.")
+          else
+            UI.success('AppBox finished successfully')
           end
-          UI.success('AppBox finished successfully')
         else
           UI.error('AppBox finished with errors')
+          unless page_args.empty?
+            UI.important("more_details, ipa_link, previous_versions and chunk_size need AppBox 4.1.0 or later. If the CLI reported an unknown option, update AppBox.")
+          end
           UI.user_error!('AppBox upload failed. Please feel free to open an issue on the project GitHub page, including a description of what is not working. https://github.com/getappbox/fastlane-plugin-appbox/issues/new')
         end
+      end
+
+      # Runs appboxcli without a shell and returns its exit code.
+      def self.run_cli(args)
+        system(*args)
+        $?.exitstatus
+      end
+
+      def self.export_share_values
+        share_url_file_path = File.join(File.expand_path('~'), ".appbox_share_value.json")
+        return unless File.file?(share_url_file_path)
+
+        share_urls_values = JSON.parse(File.read(share_url_file_path))
+        Actions.lane_context[SharedValues::APPBOX_IPA_URL] = share_urls_values['APPBOX_IPA_URL']
+        Actions.lane_context[SharedValues::APPBOX_SHARE_URL] = share_urls_values['APPBOX_SHARE_URL']
+        Actions.lane_context[SharedValues::APPBOX_MANIFEST_URL] = share_urls_values['APPBOX_MANIFEST_URL']
+        FastlaneCore::PrintTable.print_values(config: share_urls_values, hide_keys: [], title: "Summary for AppBox")
+      end
+
+      def self.install_page_args(params)
+        args = []
+
+        INSTALL_PAGE_TOGGLES.each do |key, flag, label|
+          next if params[key].nil?
+
+          args << (params[key] ? "--#{flag}" : "--no-#{flag}")
+          UI.message("#{label} - #{params[key]}")
+        end
+
+        if params[:chunk_size]
+          args += ["--chunksize", params[:chunk_size].to_s]
+          UI.message("Chunk Size - #{params[:chunk_size]} MB")
+        end
+
+        args
       end
 
       def self.output
@@ -158,7 +204,34 @@ module Fastlane
           FastlaneCore::ConfigItem.new(key: :webhook_message,
                                        env_name: "FL_APPBOX_WEBHOOK_MESSAGE",
                                        description: "Deprecated and ignored since AppBox 4, which generates the notification text from the build. Accepted, with a warning, so existing Fastfiles keep working",
-                                       optional: true)
+                                       optional: true),
+
+          FastlaneCore::ConfigItem.new(key: :more_details,
+                                       env_name: "FL_APPBOX_MORE_DETAILS",
+                                       description: "Show the expanded build details on the install page (minimum iOS version, supported devices, build type, IPA size and provisioning profile). Unset uses the AppBox app setting, then on. Requires AppBox 4.1.0 or later",
+                                       optional: true,
+                                       type: Fastlane::Boolean),
+
+          FastlaneCore::ConfigItem.new(key: :ipa_link,
+                                       env_name: "FL_APPBOX_IPA_LINK",
+                                       description: "Show the direct IPA download link on the install page. Unset uses the AppBox app setting, then off. Requires AppBox 4.1.0 or later",
+                                       optional: true,
+                                       type: Fastlane::Boolean),
+
+          FastlaneCore::ConfigItem.new(key: :previous_versions,
+                                       env_name: "FL_APPBOX_PREVIOUS_VERSIONS",
+                                       description: "Keep earlier builds listed on the install page. Unset uses the AppBox app setting, then on. Requires AppBox 4.1.0 or later",
+                                       optional: true,
+                                       type: Fastlane::Boolean),
+
+          FastlaneCore::ConfigItem.new(key: :chunk_size,
+                                       env_name: "FL_APPBOX_CHUNK_SIZE",
+                                       description: "Dropbox upload chunk size in MB, from 1 to 150. Unset uses the AppBox app setting, then 100. Requires AppBox 4.1.0 or later",
+                                       optional: true,
+                                       type: Integer,
+                                       verify_block: proc do |value|
+                                         UI.user_error!("chunk_size must be between 1 and 150 MB, got #{value}") unless (1..150).cover?(value)
+                                       end)
         ]
       end
 

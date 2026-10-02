@@ -53,3 +53,16 @@ lane :testCustomDBFolderName do
     dropbox_folder_name: 'Fastlane-Demo-Keep-Same-Link'
   )
 end
+
+desc "Upload IPA file with fixed install page settings, for CI."
+lane :testInstallPageSettings do
+  gym
+  appbox(
+    emails: 'info@developerinsider.in',
+    keep_same_link: true,
+    more_details: true,
+    ipa_link: false,
+    previous_versions: true,
+    chunk_size: 50
+  )
+end

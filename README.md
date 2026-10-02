@@ -42,6 +42,12 @@ Define appbox action in your project Fastfile with emails and message. Here the 
 | `ms_teams_webhook_url` | String (Optional) | Microsoft Teams Incoming Webhook URL to post a notification to a Teams channel. |
 | `webhook_message` | String (Optional) | **Deprecated and ignored since AppBox 4**, which generates the notification text from the build itself. |
 | `dropbox_folder_name` | String (Optional) | You can change the link by providing a Custom Dropbox Folder Name. Read more [here](https://docs.getappbox.com/Features/keepsamelink/). |
+| `more_details` | Bool (Optional) | Show the expanded build details on the install page: minimum iOS version, supported devices, build type, IPA size and provisioning profile. |
+| `ipa_link` | Bool (Optional) | Show the direct IPA download link on the install page. |
+| `previous_versions` | Bool (Optional) | Keep earlier builds listed on the install page. |
+| `chunk_size` | Integer (Optional) | Dropbox upload chunk size in MB, from 1 to 150. |
+
+The four install-page settings (`more_details`, `ipa_link`, `previous_versions` and `chunk_size`) need AppBox 4.1.0 or later. Each one you leave unset falls back to the AppBox app's setting on the build machine, then to the built-in default: details on, IPA link off, previous versions on, 100 MB chunks. Set them in CI so every run uses the same install page, whatever the machine's AppBox is configured for. Each also reads an environment variable: `FL_APPBOX_MORE_DETAILS`, `FL_APPBOX_IPA_LINK`, `FL_APPBOX_PREVIOUS_VERSIONS` and `FL_APPBOX_CHUNK_SIZE`.
 
 
 ## 2. Supported AppBox link access via Fastlane SharedValues
@@ -128,6 +134,26 @@ platform :ios do
         message: 'Here is the latest build.',
         keep_same_link: true,
         dropbox_folder_name: 'Fastlane-Demo-Keep-Same-Link',
+    )
+  end
+end
+```
+
+### 3.6. Upload IPA file with fixed install page settings, for CI.
+
+```rb
+default_platform(:ios)
+
+platform :ios do
+  lane :gymbox do
+    gym
+    appbox(
+        emails: 'you@example.com',
+        keep_same_link: true,
+        more_details: true,
+        ipa_link: false,
+        previous_versions: true,
+        chunk_size: 50,
     )
   end
 end
