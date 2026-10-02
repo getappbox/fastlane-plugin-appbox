@@ -1,7 +1,9 @@
-# AppBox Plugin for Fastlane
+[![Sponsor on GitHub](https://img.shields.io/badge/Sponsor%20on%20GitHub-EA4AAA?style=for-the-badge&logo=github&logoColor=white)](https://github.com/sponsors/vineetchoudhary)
+[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/vineetchoudhary)
+[![Test status](https://img.shields.io/github/actions/workflow/status/getappbox/fastlane-plugin-appbox/test.yml?branch=master&style=for-the-badge&logo=githubactions&logoColor=white&label=tests)](https://github.com/getappbox/fastlane-plugin-appbox/actions/workflows/test.yml)
+[![Downloads](https://img.shields.io/gem/dt/fastlane-plugin-appbox?style=for-the-badge&logo=rubygems&logoColor=white&label=downloads)](https://rubygems.org/gems/fastlane-plugin-appbox)
 
-[![fastlane Plugin Badge](https://rawcdn.githack.com/fastlane/fastlane/master/fastlane/assets/plugin-badge.svg)](https://rubygems.org/gems/fastlane-plugin-appbox)
-[![Test](https://github.com/getappbox/fastlane-plugin-appbox/actions/workflows/test.yml/badge.svg)](https://github.com/getappbox/fastlane-plugin-appbox/actions/workflows/test.yml)
+# AppBox Plugin for Fastlane
 
 ## 1. Getting Started
 
@@ -142,4 +144,17 @@ For any other issues and feedback about this plugin, please submit it to this [r
 
 ## 7. Troubleshooting
 If you have trouble using plugins, check out the [Plugins Troubleshooting](https://docs.fastlane.tools/plugins/plugins-troubleshooting/) guide.
+
+## 8. Support
+If this plugin has been useful to you, consider supporting the continued development of AppBox.
+
+<a href="https://github.com/sponsors/vineetchoudhary">
+  <img src="https://img.shields.io/badge/Sponsor%20on%20GitHub-EA4AAA?style=for-the-badge&logo=github&logoColor=white" alt="Sponsor on GitHub" height="50">
+</a>
+&nbsp;
+<a href="https://buymeacoffee.com/vineetchoudhary">
+  <img src="https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me a Coffee" height="50">
+</a>
+
+Thank you for supporting open source! 🙏
 
